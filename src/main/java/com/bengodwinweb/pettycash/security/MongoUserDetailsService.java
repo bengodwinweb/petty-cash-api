@@ -27,11 +27,11 @@ public class MongoUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("User with email of " + email + " not found");
         }
 
-        List<GrantedAuthority> userAuthorities = getUserAuthority(user.getRoles());
-        System.out.println("User has authorities:");
-        for (GrantedAuthority authority : userAuthorities) {
-            System.out.println("\t" + authority);
-        }
+//        List<GrantedAuthority> userAuthorities = getUserAuthority(user.getRoles());
+//        System.out.println("User has authorities:");
+//        for (GrantedAuthority authority : userAuthorities) {
+//            System.out.println("\t" + authority);
+//        }
 
         return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), getUserAuthority(user.getRoles()));
     }

@@ -2,15 +2,14 @@ package com.bengodwinweb.pettycash.controller;
 
 import com.bengodwinweb.pettycash.dto.model.error.ApiError;
 import com.bengodwinweb.pettycash.dto.model.error.ApiSubError;
-import com.bengodwinweb.pettycash.exception.AuthenticationException;
-import com.bengodwinweb.pettycash.exception.EmailExistsException;
-import com.bengodwinweb.pettycash.exception.NewUserValidationException;
+import com.bengodwinweb.pettycash.exception.*;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -30,6 +29,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ExpiredJwtException.class)
     protected ResponseEntity<Object> expiredJwt(ExpiredJwtException e) {
         return buildResponseEntity(new ApiError().setStatus(HttpStatus.UNAUTHORIZED).setMessage("JWT Token has expired").setDebugMessage("Please login"));
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    protected ResponseEntity<Object> unauthorized(UnauthorizedException e) {
+        return buildResponseEntity(new ApiError().setStatus(HttpStatus.UNAUTHORIZED).setMessage("Unauthorized").setDebugMessage(e.getMessage()));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -56,7 +60,16 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             ApiSubError subError = new ApiSubError(fieldError.getField(), fieldError.getDefaultMessage());
             subErrors.add(subError);
         }
+        for (ObjectError objectError : e.getErrors().getGlobalErrors()) {
+            ApiSubError subError = new ApiSubError(objectError.getObjectName(), objectError.getDefaultMessage());
+            subErrors.add(subError);
+        }
 
         return buildResponseEntity(apiError.setMessage(e.getMessage()).setSubErrors(subErrors));
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    protected ResponseEntity<Object> handleNotFound(NotFoundException e) {
+        return buildResponseEntity(new ApiError().setStatus(HttpStatus.NOT_FOUND).setMessage("Not found").setDebugMessage(e.getMessage()));
     }
 }

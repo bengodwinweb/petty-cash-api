@@ -1,4 +1,4 @@
-package com.bengodwinweb.pettycash.dto.model;
+package com.bengodwinweb.pettycash.controller.request;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,17 +12,17 @@ import javax.validation.constraints.NotNull;
 @Setter
 @Accessors(chain = true)
 @NoArgsConstructor
-// TODO - Make @PasswordMatches validator
-public class NewUserDto {
+@PasswordMatches
+public class UserSignupRequest {
 
     @NotNull
     @NotEmpty
-    // TODO - Make @ValidEmail validator
+    @ValidEmail
     private String email;
 
     @NotNull
     @NotEmpty
-    // TODO - Make @ValidPassword validator
+    @ValidPassword
     private String password;
     private String matchingPassword;
 

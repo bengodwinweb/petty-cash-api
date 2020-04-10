@@ -1,5 +1,6 @@
 package com.bengodwinweb.pettycash.security;
 
+import com.bengodwinweb.pettycash.security.filters.DataFilter;
 import com.bengodwinweb.pettycash.security.filters.JwtRequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -28,6 +29,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private JwtRequestFilter jwtRequestFilter;
+
+    @Autowired
+    private DataFilter dataFilter;
 
     @Autowired
     protected void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {

@@ -6,6 +6,7 @@ import com.bengodwinweb.pettycash.security.MongoUserDetailsService;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Component
+@Order(1)
 public class JwtRequestFilter extends OncePerRequestFilter {
 
     @Autowired

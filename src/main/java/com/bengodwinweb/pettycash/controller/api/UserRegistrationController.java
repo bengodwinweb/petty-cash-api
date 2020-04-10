@@ -1,10 +1,10 @@
-package com.bengodwinweb.pettycash.controller;
+package com.bengodwinweb.pettycash.controller.api;
 
-import com.bengodwinweb.pettycash.dto.model.NewUserDto;
+import com.bengodwinweb.pettycash.controller.request.UserSignupRequest;
+import com.bengodwinweb.pettycash.dto.model.UserDto;
 import com.bengodwinweb.pettycash.dto.response.Response;
 import com.bengodwinweb.pettycash.exception.EmailExistsException;
 import com.bengodwinweb.pettycash.exception.NewUserValidationException;
-import com.bengodwinweb.pettycash.model.User;
 import com.bengodwinweb.pettycash.security.JwtResponse;
 import com.bengodwinweb.pettycash.security.JwtTokenService;
 import com.bengodwinweb.pettycash.security.MongoUserDetailsService;
@@ -15,13 +15,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 
 import javax.validation.Valid;
 
 @Controller
-public class RegistrationController {
+public class UserRegistrationController {
 
     @Autowired
     private UserService userService;
@@ -40,12 +43,12 @@ public class RegistrationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerNewUser(@RequestBody @Valid NewUserDto newUserDto, BindingResult result, WebRequest req, Errors errors) throws EmailExistsException, NewUserValidationException {
+    public ResponseEntity<?> registerNewUser(@RequestBody @Valid UserSignupRequest userSignupRequest, BindingResult result, WebRequest req, Errors errors) throws EmailExistsException, NewUserValidationException {
 
         if (result.hasErrors()) throw new NewUserValidationException("Validation Error", errors);
 
-        User newUser = null;
-        newUser = userService.signup(newUserDto);
+        UserDto newUser = null;
+        newUser = userService.signup(userSignupRequest);
 
         if (newUser == null) result.rejectValue("email", "message.regError");
 
