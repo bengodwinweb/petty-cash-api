@@ -2,7 +2,7 @@ package com.bengodwinweb.pettycash.controller.api;
 
 import com.bengodwinweb.pettycash.controller.request.UserSignupRequest;
 import com.bengodwinweb.pettycash.dto.model.UserDto;
-import com.bengodwinweb.pettycash.dto.response.Response;
+import com.bengodwinweb.pettycash.dto.response.SimpleResponse;
 import com.bengodwinweb.pettycash.exception.EmailExistsException;
 import com.bengodwinweb.pettycash.exception.NewUserValidationException;
 import com.bengodwinweb.pettycash.security.JwtResponse;
@@ -37,9 +37,9 @@ public class UserRegistrationController {
 
     @GetMapping("/register")
     @ResponseBody
-    public Response getRegister() {
+    public SimpleResponse getRegister() {
         System.out.println("GET to /register");
-        return new Response("get to /register");
+        return new SimpleResponse("get to /register");
     }
 
     @PostMapping("/register")

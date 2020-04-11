@@ -1,6 +1,6 @@
 package com.bengodwinweb.pettycash.controller.api;
 
-import com.bengodwinweb.pettycash.dto.response.Response;
+import com.bengodwinweb.pettycash.dto.response.SimpleResponse;
 import com.bengodwinweb.pettycash.util.UserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -18,14 +18,14 @@ public class RootController {
 
     @RequestMapping(value = "/", method = RequestMethod.GET)
     @ResponseBody
-    public Response getRoot() {
-        return new Response("Petty Cash status OK");
+    public SimpleResponse getRoot() {
+        return new SimpleResponse("Petty Cash status OK");
     }
 
     @RequestMapping(value = "/restricted", method = RequestMethod.GET)
     @ResponseBody
-    public Response getCurrentUser(Principal principal) {
+    public SimpleResponse getCurrentUser(Principal principal) {
         boolean isAdmin = userUtil.isAdmin(principal.getName());
-        return new Response("logged in as " + principal.getName() + ", Admin: " + isAdmin);
+        return new SimpleResponse("logged in as " + principal.getName() + ", Admin: " + isAdmin);
     }
 }

@@ -23,8 +23,6 @@ public class UserUtil {
     public boolean isAdmin(String email) {
         User user = userRepository.findByEmail(email);
         ArrayList<String> roles = user.getRoles().stream().map(Role::getRole).collect(Collectors.toCollection(ArrayList::new));
-        boolean isAdmin = roles.contains(UserRoles.ADMIN.name());
-        System.out.println("User is admin: " + isAdmin);
-        return isAdmin;
+        return roles.contains(UserRoles.ADMIN.name());
     }
 }
