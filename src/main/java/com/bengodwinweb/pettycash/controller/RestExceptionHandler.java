@@ -51,8 +51,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return buildResponseEntity(new ApiError().setStatus(HttpStatus.BAD_REQUEST).setMessage(e.getMessage()));
     }
 
-    @ExceptionHandler(NewUserValidationException.class)
-    protected ResponseEntity<Object> handleNewUserValidation(NewUserValidationException e) {
+    @ExceptionHandler(ValidationException.class)
+    protected ResponseEntity<Object> handleNewUserValidation(ValidationException e) {
         ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST);
 
         List<ApiSubError> subErrors = new ArrayList<>();
@@ -65,11 +65,16 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             subErrors.add(subError);
         }
 
-        return buildResponseEntity(apiError.setMessage(e.getMessage()).setSubErrors(subErrors));
+        return buildResponseEntity(apiError.setMessage("Validation Error").setDebugMessage(e.getMessage()).setSubErrors(subErrors));
     }
 
     @ExceptionHandler(NotFoundException.class)
     protected ResponseEntity<Object> handleNotFound(NotFoundException e) {
         return buildResponseEntity(new ApiError().setStatus(HttpStatus.NOT_FOUND).setMessage("Not found").setDebugMessage(e.getMessage()));
+    }
+
+    @ExceptionHandler(NonmatchingTotalException.class)
+    protected ResponseEntity<Object> handleNonmatchingTotal(NonmatchingTotalException e) {
+        return buildResponseEntity(new ApiError().setStatus(HttpStatus.BAD_REQUEST).setMessage("Box totals do not match").setDebugMessage(e.getMessage()));
     }
 }

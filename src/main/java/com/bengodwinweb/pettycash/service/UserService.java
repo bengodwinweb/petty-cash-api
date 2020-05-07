@@ -36,6 +36,7 @@ public class UserService implements IUserService {
     public List<UserDto> getAllUsers() {
         return userRepository.findAll()
                 .stream()
+                .sorted()
                 .map(UserMapper::toUserDto)
                 .collect(Collectors.toList());
     }
@@ -56,10 +57,17 @@ public class UserService implements IUserService {
     }
 
     @Override
+    public String getIdByEmail(String email) throws NotFoundException {
+        User user = userRepository.findByEmail(email);
+        if (user == null) throw new NotFoundException("User with email " + email + " not found");
+        return user.getId();
+    }
+
+    @Override
     public UserDto updateUser(UserDto userDto) throws NotFoundException {
-        User user = userRepository.findByEmail(userDto.getEmail());
-        if (user == null) throw new NotFoundException("User with email " + userDto.getEmail() + " not found");
-        user
+        Optional<User> userOptional = userRepository.findById(userDto.getId());
+        if (userOptional.isEmpty()) throw new NotFoundException("User with id " + userDto.getId() + " not found");
+        User user = userOptional.get()
                 .setEmail(userDto.getEmail())
                 .setFirstName(userDto.getFirstName())
                 .setLastName(userDto.getLastName());
@@ -98,5 +106,4 @@ public class UserService implements IUserService {
         User user = userRepository.findByEmail(email);
         return user != null;
     }
-
 }

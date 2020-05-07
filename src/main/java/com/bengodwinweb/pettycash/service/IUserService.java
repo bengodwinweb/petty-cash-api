@@ -15,6 +15,8 @@ public interface IUserService {
 
     UserDto getUserById(String id) throws NotFoundException;
 
+    String getIdByEmail(String email) throws NotFoundException;
+
     UserDto getUserByEmail(String email) throws NotFoundException;
 
     UserDto updateUser(UserDto userDto) throws NotFoundException;

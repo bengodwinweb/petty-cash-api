@@ -4,7 +4,7 @@ import com.bengodwinweb.pettycash.controller.request.UserSignupRequest;
 import com.bengodwinweb.pettycash.dto.model.UserDto;
 import com.bengodwinweb.pettycash.dto.response.SimpleResponse;
 import com.bengodwinweb.pettycash.exception.EmailExistsException;
-import com.bengodwinweb.pettycash.exception.NewUserValidationException;
+import com.bengodwinweb.pettycash.exception.ValidationException;
 import com.bengodwinweb.pettycash.security.JwtResponse;
 import com.bengodwinweb.pettycash.security.JwtTokenService;
 import com.bengodwinweb.pettycash.security.MongoUserDetailsService;
@@ -43,9 +43,9 @@ public class UserRegistrationController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerNewUser(@RequestBody @Valid UserSignupRequest userSignupRequest, BindingResult result, WebRequest req, Errors errors) throws EmailExistsException, NewUserValidationException {
+    public ResponseEntity<?> registerNewUser(@RequestBody @Valid UserSignupRequest userSignupRequest, BindingResult result, WebRequest req, Errors errors) throws EmailExistsException, ValidationException {
 
-        if (result.hasErrors()) throw new NewUserValidationException("Validation Error", errors);
+        if (result.hasErrors()) throw new ValidationException("Error validating New User", errors);
 
         UserDto newUser = null;
         newUser = userService.signup(userSignupRequest);

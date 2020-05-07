@@ -15,7 +15,7 @@ import java.util.List;
 @Setter
 @Accessors(chain = true)
 @Document(collection = "user")
-public class User {
+public class User implements Comparable<User> {
 
     @Id
     private String id;
@@ -39,6 +39,7 @@ public class User {
 
     public User() {
         created = LocalDateTime.now();
+        lastSeen = LocalDateTime.now();
     }
 
     public String getFullName() {
@@ -51,5 +52,11 @@ public class User {
 
     public void removeRole(Role role) {
         roles.remove(role);
+    }
+
+    @Override
+    public int compareTo(User o) {
+        if (this.getLastName().equals(o.getLastName())) return this.firstName.compareTo(o.firstName);
+        return this.lastName.compareTo(o.lastName);
     }
 }

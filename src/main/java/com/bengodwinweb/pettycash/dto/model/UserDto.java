@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 
 @Getter
 @Setter
-@Accessors(chain = true )
+@Accessors(chain = true)
 @NoArgsConstructor
 public class UserDto {
 
@@ -15,4 +15,6 @@ public class UserDto {
     private String email;
     private String firstName;
     private String lastName;
+    private String created;
+    private String lastSeen;
 }
