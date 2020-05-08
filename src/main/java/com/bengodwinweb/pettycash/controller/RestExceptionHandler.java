@@ -52,7 +52,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(ValidationException.class)
-    protected ResponseEntity<Object> handleNewUserValidation(ValidationException e) {
+    protected ResponseEntity<Object> handleValidationException(ValidationException e) {
         ApiError apiError = new ApiError(HttpStatus.BAD_REQUEST);
 
         List<ApiSubError> subErrors = new ArrayList<>();
@@ -66,6 +66,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         }
 
         return buildResponseEntity(apiError.setMessage("Validation Error").setDebugMessage(e.getMessage()).setSubErrors(subErrors));
+    }
+
+    @ExceptionHandler(SingleValidationException.class)
+    protected ResponseEntity<Object> handleSingleValidationException(SingleValidationException e) {
+        return buildResponseEntity(new ApiError().setStatus(HttpStatus.BAD_REQUEST).setMessage("Validation Error").setDebugMessage(e.getMessage()));
     }
 
     @ExceptionHandler(NotFoundException.class)

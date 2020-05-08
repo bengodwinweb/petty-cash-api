@@ -15,6 +15,7 @@ import com.bengodwinweb.pettycash.repository.BoxRepository;
 import com.bengodwinweb.pettycash.repository.CashboxRepository;
 import com.bengodwinweb.pettycash.repository.TransactionRepository;
 import com.bengodwinweb.pettycash.repository.UserRepository;
+import com.bengodwinweb.pettycash.util.MoneyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,37 +45,22 @@ public class CashboxService {
 
     public CashboxDto createCashbox(CashboxDto newCashbox, String userEmail) {
         Box idealBox = Box.createDefaultBox();
-        idealBox.updateBox((int) (newCashbox.getTotal() * 100));
-        boxRepository.save(idealBox);
-
-        Box currentBox = new Box()
-                .setTwenties(idealBox.getTwenties())
-                .setTens(idealBox.getTens())
-                .setFives(idealBox.getFives())
-                .setOnes(idealBox.getOnes())
-                .setQuarters(idealBox.getQuarters())
-                .setDimes(idealBox.getDimes())
-                .setNickels(idealBox.getNickels())
-                .setPennies(idealBox.getPennies());
-        currentBox.updateBox((int) (newCashbox.getRemainingCash() * 100));
-        boxRepository.save(currentBox);
-
+        Box currentBox = new Box();
         Box changeBox = new Box();
-        changeBox.updateBox(idealBox.getBoxTotal() - currentBox.getBoxTotal());
-        boxRepository.save(changeBox);
-
         User user = userRepository.findByEmail(userEmail);
 
         Cashbox cashbox = new Cashbox()
                 .setUser(user)
                 .setCompany(newCashbox.getCompany())
                 .setName(newCashbox.getName())
-                .setTotal((int) (newCashbox.getTotal() * 100))
-                .setRemainingCash((int) (newCashbox.getRemainingCash()) * 100)
+                .setTotal(MoneyUtil.doubleToCents(newCashbox.getTotal()))
+                .setRemainingCash(MoneyUtil.doubleToCents(newCashbox.getRemainingCash()))
                 .setCurrentBox(currentBox)
                 .setChangeBox(changeBox)
                 .setIdealBox(idealBox)
                 .setLastUpdated(LocalDateTime.now());
+
+        updateAllCashboxes(cashbox);
 
         return CashboxMapper.toCashboxDto(cashboxRepository.save(cashbox));
     }
@@ -95,60 +81,77 @@ public class CashboxService {
         return CashboxMapper.toCashboxDto(cashbox);
     }
 
-    public CashboxDto resetCashbox(CashboxDto cashboxDto) throws NotFoundException {
-        Cashbox cashbox = getFromId(cashboxDto.getId());
+    public void resetCashbox(String cashboxId) throws NotFoundException {
+        Cashbox cashbox = getFromId(cashboxId);
         cashbox.getTransactions().forEach(transaction -> transactionRepository.delete(transaction));
         cashbox.getTransactions().clear();
         cashbox.setRemainingCash(cashbox.getTotal());
-        cashbox.setLastUpdated(LocalDateTime.now());
-        updateBoxes(cashbox);
-        return CashboxMapper.toCashboxDto(cashboxRepository.save(cashbox));
+
+        Box currentBox = cashbox.getCurrentBox();
+        Box changeBox = cashbox.getChangeBox();
+
+        currentBox.addChange(changeBox);
+        changeBox.resetAll();
+
+        boxRepository.save(currentBox);
+        boxRepository.save(changeBox);
+
+        cashboxRepository.save(cashbox.setLastUpdated(LocalDateTime.now()));
     }
 
     public void updateCashbox(CashboxDto cashboxDto) throws NotFoundException {
         Cashbox cashbox = getFromId(cashboxDto.getId())
                 .setCompany(cashboxDto.getCompany())
                 .setName(cashboxDto.getName())
-                .setLastUpdated(LocalDateTime.now());
+                .setTotal(MoneyUtil.doubleToCents(cashboxDto.getTotal()))
+                .setRemainingCash(MoneyUtil.doubleToCents(cashboxDto.getRemainingCash()));
 
-        int newTotal = (int) (cashboxDto.getTotal() * 100);
-        if (newTotal != cashbox.getTotal()) {
-            Box idealBox = cashbox.getIdealBox();
-            idealBox.updateBox(newTotal);
-            Box currentBox = cashbox.getCurrentBox();
-            Box changeBox = cashbox.getChangeBox();
-            changeBox.makeChange(currentBox, idealBox, newTotal);
-
-            boxRepository.save(idealBox);
-            boxRepository.save(changeBox);
-            cashbox.setTotal(newTotal);
-        }
-
-        int remainingCash = (int) (cashboxDto.getRemainingCash() * 100);
-        if (remainingCash != cashbox.getRemainingCash()) {
-            cashbox.setRemainingCash(remainingCash);
-            updateBoxes(cashbox);
-        }
-
-        cashboxRepository.save(cashbox);
+        updateAllCashboxes(cashbox);
+        cashboxRepository.save(cashbox.setLastUpdated(LocalDateTime.now()));
     }
 
-    public void updateBoxes(String cashboxId) throws NotFoundException {
-        cashboxRepository.save(updateBoxes(getFromId(cashboxId)));
+    protected void updateAllCashboxes(Cashbox cashbox) {
+        Box idealBox = cashbox.getIdealBox();
+        Box currentBox = cashbox.getCurrentBox();
+        Box changeBox = cashbox.getChangeBox();
+
+        idealBox.updateBox(cashbox.getTotal());
+        currentBox
+                .setTwenties(idealBox.getTwenties())
+                .setTens(idealBox.getTens())
+                .setFives(idealBox.getFives())
+                .setOnes(idealBox.getOnes())
+                .setQrolls(idealBox.getQrolls())
+                .setDrolls(idealBox.getDrolls())
+                .setNrolls(idealBox.getNrolls())
+                .setProlls(idealBox.getProlls())
+                .setQuarters(idealBox.getQuarters())
+                .setDimes(idealBox.getDimes())
+                .setNickels(idealBox.getNickels())
+                .setPennies(idealBox.getPennies())
+                .decrementTo(cashbox.getRemainingCash());
+
+        changeBox.makeChange(currentBox, idealBox, cashbox.getTotal() - cashbox.getRemainingCash());
+
+        boxRepository.save(idealBox);
+        boxRepository.save(currentBox);
+        boxRepository.save(changeBox);
     }
 
-    protected Cashbox updateBoxes(Cashbox cashbox) {
+    protected void updateCurrentAndChangeBoxes(Cashbox cashbox) {
         Box currentBox = cashbox.getCurrentBox();
         Box changeBox = cashbox.getChangeBox();
         Box idealBox = cashbox.getIdealBox();
 
-        currentBox.updateBox(cashbox.getRemainingCash());
+        currentBox.decrementTo(cashbox.getRemainingCash());
         changeBox.makeChange(currentBox, idealBox, cashbox.getTotal() - cashbox.getRemainingCash());
 
         boxRepository.save(currentBox);
         boxRepository.save(changeBox);
+    }
 
-        return cashboxRepository.save(cashbox.setLastUpdated(LocalDateTime.now()));
+    public void updateCurrentAndChangeBoxes(String cashboxId) throws NotFoundException {
+        updateCurrentAndChangeBoxes(getFromId(cashboxId));
     }
 
     protected Cashbox getFromId(String id) throws NotFoundException {

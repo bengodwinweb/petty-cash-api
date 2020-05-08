@@ -18,62 +18,61 @@ public class BoxDto {
 
     @NotNull
     @Min(0)
-    private int twenties;
+    private Integer twenties;
     private double twentiesValue;
 
     @NotNull
     @Min(0)
-    private int tens;
+    private Integer tens;
     private double tensValue;
 
-    @NotNull
     @Min(0)
-    private int fives;
+    private @NotNull int fives;
     private double fivesValue;
 
     @NotNull
     @Min(0)
-    private int ones;
+    private Integer ones;
     private double onesValue;
 
     @NotNull
     @Min(0)
-    private int qrolls;
+    private Integer qrolls;
     private double qrollsValue;
 
     @NotNull
     @Min(0)
-    private int drolls;
+    private Integer drolls;
     private double drollsValue;
 
     @NotNull
     @Min(0)
-    private int nrolls;
+    private Integer nrolls;
     private double nrollsValue;
 
     @NotNull
     @Min(0)
-    private int prolls;
+    private Integer prolls;
     private double prollsValue;
 
     @NotNull
     @Min(0)
-    private int quarters;
+    private Integer quarters;
     private double quartersValue;
 
     @NotNull
     @Min(0)
-    private int dimes;
+    private Integer dimes;
     private double dimesValue;
 
     @NotNull
     @Min(0)
-    private int nickels;
+    private Integer nickels;
     private double nickelsValue;
 
     @NotNull
     @Min(0)
-    private int pennies;
+    private Integer pennies;
     private double penniesValue;
 
     private double boxTotal;

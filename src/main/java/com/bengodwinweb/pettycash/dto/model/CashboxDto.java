@@ -1,5 +1,6 @@
 package com.bengodwinweb.pettycash.dto.model;
 
+import com.bengodwinweb.pettycash.controller.request.ValidRemaining;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import javax.validation.constraints.NotNull;
 @Setter
 @Accessors(chain = true)
 @NoArgsConstructor
+@ValidRemaining
 public class CashboxDto {
 
     private String id;
@@ -27,9 +29,9 @@ public class CashboxDto {
 
     @NotNull
     @Min(100)
-    private double total;
+    private Double total;
 
     @NotNull
-    @Min(1)
-    private double remainingCash;
+    @Min(0)
+    private Double remainingCash;
 }

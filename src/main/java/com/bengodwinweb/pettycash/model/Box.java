@@ -148,19 +148,21 @@ public class Box {
                 .setPennies(50);
     }
 
-    public void updateBox(int newTotal) {
-        if (newTotal < 0) return;
+    public void incrementTo(int newTotal) {
+        if (newTotal < getBoxTotal()) return;
 
-        if (getBoxTotal() < newTotal) {
-            while (getBoxTotal() + Currency.TWENTIES.value() <= newTotal) twenties += 1;
-            while (getBoxTotal() + Currency.TENS.value() <= newTotal) tens += 1;
-            while (getBoxTotal() + Currency.FIVES.value() <= newTotal) fives += 1;
-            while (getBoxTotal() + Currency.ONES.value() <= newTotal) ones += 1;
-            while (getBoxTotal() + Currency.QUARTERS.value() <= newTotal) quarters += 1;
-            while (getBoxTotal() + Currency.DIMES.value() <= newTotal) dimes += 1;
-            while (getBoxTotal() + Currency.NICKELS.value() <= newTotal) nickels += 1;
-            while (getBoxTotal() + Currency.PENNIES.value() <= newTotal) pennies += 1;
-        }
+        while (getBoxTotal() + Currency.TWENTIES.value() <= newTotal) twenties += 1;
+        while (getBoxTotal() + Currency.TENS.value() <= newTotal) tens += 1;
+        while (getBoxTotal() + Currency.FIVES.value() <= newTotal) fives += 1;
+        while (getBoxTotal() + Currency.ONES.value() <= newTotal) ones += 1;
+        while (getBoxTotal() + Currency.QUARTERS.value() <= newTotal) quarters += 1;
+        while (getBoxTotal() + Currency.DIMES.value() <= newTotal) dimes += 1;
+        while (getBoxTotal() + Currency.NICKELS.value() <= newTotal) nickels += 1;
+        while (getBoxTotal() + Currency.PENNIES.value() <= newTotal) pennies += 1;
+    }
+
+    public void decrementTo(int newTotal) {
+        if (newTotal < 0) return;
 
         if (getBoxTotal() > newTotal) {
             while (getBoxTotal() - Currency.TWENTIES.value() >= newTotal && getTwenties() > 0) twenties--;
@@ -216,6 +218,14 @@ public class Box {
             }
         }
 
+    }
+
+    public void updateBox(int newTotal) {
+        if (newTotal < 0) return;
+
+        incrementTo(newTotal);
+        decrementTo(newTotal);
+
         if (getBoxTotal() > newTotal) {
             if (getTwenties() > 0) {
                 twenties--;
@@ -256,24 +266,24 @@ public class Box {
         updateBox(total);
 
         // cascade extra coins up to denomination above
-        while(getPennies() >= 5) {
+        while (getPennies() >= 5) {
             pennies -= 5;
             nickels++;
         }
-        while(getDimes() >= 3) {
+        while (getDimes() >= 3) {
             dimes -= 3;
             quarters++;
             nickels++;
         }
-        while(getNickels() >= 5) {
+        while (getNickels() >= 5) {
             nickels -= 5;
             quarters++;
         }
-        while(getNickels() >= 2) {
+        while (getNickels() >= 2) {
             nickels -= 2;
             dimes++;
         }
-        while(getQuarters() >= 4) {
+        while (getQuarters() >= 4) {
             quarters -= 4;
             ones++;
         }
@@ -319,5 +329,35 @@ public class Box {
                 prolls += 2;
             }
         }
+    }
+
+    public void resetAll() {
+        setTwenties(0);
+        setTens(0);
+        setFives(0);
+        setOnes(0);
+        setQrolls(0);
+        setDrolls(0);
+        setNrolls(0);
+        setProlls(0);
+        setQuarters(0);
+        setDimes(0);
+        setNickels(0);
+        setPennies(0);
+    }
+
+    public void addChange(Box changeBox) {
+        setTwenties(getTwenties() + changeBox.getTwenties());
+        setTens(getTens() + changeBox.getTens());
+        setFives(getFives() + changeBox.getFives());
+        setOnes(getOnes() + changeBox.getOnes());
+        setQrolls(getQrolls() + changeBox.getQrolls());
+        setDrolls(getDrolls() + changeBox.getDrolls());
+        setNrolls(getNrolls() + changeBox.getNrolls());
+        setProlls(getProlls() + changeBox.getProlls());
+        setQuarters(getQuarters() + changeBox.getQuarters());
+        setDimes(getDimes() + changeBox.getDimes());
+        setNickels(getNickels() + changeBox.getNickels());
+        setPennies(getPennies() + changeBox.getPennies());
     }
 }

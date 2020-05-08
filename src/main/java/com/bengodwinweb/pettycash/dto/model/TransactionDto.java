@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
-import javax.validation.constraints.Min;
+import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -26,8 +26,8 @@ public class TransactionDto {
     private String expenseType;
 
     @NotNull
-    @Min(0)
-    private double amount;
+    @DecimalMin("0.01")
+    private Double amount;
 
     @NotNull
     @NotEmpty

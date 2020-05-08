@@ -31,7 +31,7 @@ public class TransactionService {
         Cashbox cashbox = cashboxService.getFromId(cashboxId);
         cashbox.getTransactions().remove(transaction);
         cashbox.setRemainingCash(cashbox.getRemainingCash() + transaction.getAmount());
-        cashboxService.updateBoxes(cashbox);
+        cashboxService.updateCurrentAndChangeBoxes(cashbox);
         cashboxRepository.save(cashbox);
 
         return TransactionMapper.toTransactionDto(transaction);

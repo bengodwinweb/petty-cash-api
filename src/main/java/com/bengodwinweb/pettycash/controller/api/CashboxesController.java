@@ -5,11 +5,11 @@ import com.bengodwinweb.pettycash.dto.model.CashboxDto;
 import com.bengodwinweb.pettycash.dto.response.CashboxResponse;
 import com.bengodwinweb.pettycash.dto.response.Response;
 import com.bengodwinweb.pettycash.exception.NotFoundException;
+import com.bengodwinweb.pettycash.exception.SingleValidationException;
 import com.bengodwinweb.pettycash.exception.UnauthorizedException;
 import com.bengodwinweb.pettycash.exception.ValidationException;
 import com.bengodwinweb.pettycash.service.BoxService;
 import com.bengodwinweb.pettycash.service.CashboxService;
-import com.bengodwinweb.pettycash.util.BoxUtil;
 import com.bengodwinweb.pettycash.util.UserUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
@@ -58,47 +58,10 @@ public class CashboxesController {
     }
 
     @PutMapping("/cashboxes/{id}")
-    public Response<Object> updateCashbox(@PathVariable("id") String id, Principal principal, @RequestBody @Valid CashboxDto cashboxToUpdate, BindingResult result, WebRequest req, Errors errors) throws ValidationException, NotFoundException, UnauthorizedException {
-        if (unauthorized(principal.getName(), cashboxToUpdate.getId())) throw new UnauthorizedException("Not authorized to update cashbox " + id);
-        cashboxService.updateCashbox(cashboxToUpdate);
-        return Response.ok().setPayload(new CashboxResponse()
-                .setCashbox(cashboxService.getCashboxById(id))
-                .setCurrentBox(cashboxService.getCurrentBox(id))
-                .setChangeBox(cashboxService.getCurrentBox(id))
-                .setIdealBox(cashboxService.getIdealBox(id))
-                .setTransactions(cashboxService.getTransactions(id)));
-    }
-
-    @PutMapping("/cashboxes/{id}/currentBox")
-    public Response<Object> updateCurrentBox(@PathVariable("id") String id, Principal principal, @RequestBody @Valid BoxDto currentBoxToUpdate, BindingResult result, WebRequest req, Errors errors) throws ValidationException, NotFoundException, UnauthorizedException {
-        if (unauthorized(principal.getName(), id)) throw new UnauthorizedException("Not authorized to edit cashbox " + id);
-        if (result.hasErrors()) throw new ValidationException("Error validating currentBox", errors);
-        BoxDto currentBoxDto = cashboxService.getCurrentBox(id);
-        if (BoxUtil.calculateBoxDtoTotal(currentBoxToUpdate) != currentBoxDto.getBoxTotal()) throw new ValidationException("Current Box total must match previous total");
-        boxService.updateBox(currentBoxDto);
-        cashboxService.updateBoxes(id);
-        return getCashbox(id, principal);
-    }
-
-    @PutMapping("/cashboxes/{id}/changeBox")
-    public Response<Object> updateChangeBox(@PathVariable("id") String id, Principal principal, @RequestBody @Valid BoxDto changeBoxToUpdate, BindingResult result, WebRequest req, Errors errors) throws ValidationException, NotFoundException, UnauthorizedException {
-        if (unauthorized(principal.getName(), id)) throw new UnauthorizedException("Not authorized to edit cashbox " + id);
-        if (result.hasErrors()) throw new ValidationException("Error validating changeBox", errors);
-        BoxDto changeBoxDto = cashboxService.getChangeBox(id);
-        if (BoxUtil.calculateBoxDtoTotal(changeBoxToUpdate) != changeBoxDto.getBoxTotal()) throw new ValidationException("Change Box total must match previous total");
-        boxService.updateBox(changeBoxDto);
-        cashboxService.updateBoxes(id);
-        return getCashbox(id, principal);
-    }
-
-    @PutMapping("/cashboxes/{id}/idealBox")
-    public Response<Object> updateIdealBox(@PathVariable("id") String id, Principal principal, @RequestBody @Valid BoxDto idealBoxToUpdate, BindingResult result, WebRequest req, Errors errors) throws ValidationException, NotFoundException, UnauthorizedException {
-        if (unauthorized(principal.getName(), id)) throw new UnauthorizedException("Not authorized to edit cashbox " + id);
-        if (result.hasErrors()) throw new ValidationException("Error validating idealBox", errors);
-        BoxDto idealBoxDto = cashboxService.getIdealBox(id);
-        if (BoxUtil.calculateBoxDtoTotal(idealBoxToUpdate) != idealBoxDto.getBoxTotal()) throw new ValidationException("Ideal Box total must match previous total");
-        boxService.updateBox(idealBoxDto);
-        cashboxService.updateBoxes(id);
+    public Response<Object> updateCashbox(@PathVariable("id") String id, Principal principal, @RequestBody @Valid CashboxDto cashboxToUpdate, BindingResult result, WebRequest req, Errors errors) throws NotFoundException, UnauthorizedException, ValidationException {
+        if (unauthorized(principal.getName(), id)) throw new UnauthorizedException("Not authorized to update cashbox " + id);
+        if (result.hasErrors()) throw new ValidationException("Error updating cashbox", errors);
+        cashboxService.updateCashbox(cashboxToUpdate.setId(id));
         return getCashbox(id, principal);
     }
 
@@ -108,8 +71,67 @@ public class CashboxesController {
         return Response.ok().setPayload(cashboxService.deleteCashboxById(id));
     }
 
+    // TODO - GET to /cashboxes/{id}/transactions
+
+    // TODO - POST to /cashboxes/{id}/transactions
+
+    // TODO - PUT to /cashboxes/{id}/transactions/{id}
+
+    // TODO - DELETE to /cashboxes/{id}/transactions/{id}
+
+    @GetMapping("/cashboxes/{id}/reset")
+    public Response<Object> resetCashbox(@PathVariable("id") String id, Principal principal) throws NotFoundException, UnauthorizedException {
+        if (unauthorized(principal.getName(), id)) throw new UnauthorizedException("Not authorized to reset cashbox " + id);
+        cashboxService.resetCashbox(id);
+        return getCashbox(id, principal);
+    }
+
+    @GetMapping("/cashboxes/{id}/currentBox")
+    public Response<Object> getCurrentBox(@PathVariable("id") String id, Principal principal) throws NotFoundException, UnauthorizedException {
+        if (unauthorized(principal.getName(), id)) throw new UnauthorizedException("Not authorized to view cashbox " + id);
+        return Response.ok().setPayload(cashboxService.getCurrentBox(id));
+    }
+
+    @PutMapping("/cashboxes/{id}/currentBox")
+    public Response<Object> updateCurrentBox(@PathVariable("id") String id, Principal principal, @RequestBody @Valid BoxDto currentBoxToUpdate, BindingResult result, WebRequest req, Errors errors) throws UnauthorizedException, NotFoundException, ValidationException, SingleValidationException {
+        if (unauthorized(principal.getName(), id)) throw new UnauthorizedException(("Not authorized to edit cashbox " + id));
+        if (result.hasErrors()) throw new ValidationException("Error validating currentBox", errors);
+        boxService.updateBox(currentBoxToUpdate.setId(cashboxService.getCurrentBox(id).getId()));
+        cashboxService.updateCurrentAndChangeBoxes(id);
+        return getCashbox(id, principal);
+    }
+
+    @GetMapping("/cashboxes/{id}/changeBox")
+    public Response<Object> getChangeBox(@PathVariable("id") String id, Principal principal) throws NotFoundException, UnauthorizedException {
+        if (unauthorized(principal.getName(), id)) throw new UnauthorizedException("Not authorized to view cashbox " + id);
+        return Response.ok().setPayload(cashboxService.getChangeBox(id));
+    }
+
+    @PutMapping("/cashboxes/{id}/changeBox")
+    public Response<Object> updateChangeBox(@PathVariable("id") String id, Principal principal, @RequestBody @Valid BoxDto changeBoxToUpdate, BindingResult result, WebRequest req, Errors errors) throws ValidationException, NotFoundException, UnauthorizedException, SingleValidationException {
+        if (unauthorized(principal.getName(), id)) throw new UnauthorizedException("Not authorized to edit cashbox " + id);
+        if (result.hasErrors()) throw new ValidationException("Error validating changeBox", errors);
+        boxService.updateBox(changeBoxToUpdate.setId(cashboxService.getChangeBox(id).getId()));
+        return getCashbox(id, principal);
+    }
+
+    @GetMapping("/cashboxes/{id}/idealBox")
+    public Response<Object> getIdealBox(@PathVariable("id") String id, Principal principal) throws NotFoundException, UnauthorizedException {
+        if (unauthorized(principal.getName(), id)) throw new UnauthorizedException("Not authorized to view cashbox " + id);
+        cashboxService.getIdealBox(id);
+        return getCashbox(id, principal);
+    }
+
+    @PutMapping("/cashboxes/{id}/idealBox")
+    public Response<Object> updateIdealBox(@PathVariable("id") String id, Principal principal, @RequestBody @Valid BoxDto idealBoxToUpdate, BindingResult result, WebRequest req, Errors errors) throws ValidationException, NotFoundException, UnauthorizedException, SingleValidationException {
+        if (unauthorized(principal.getName(), id)) throw new UnauthorizedException("Not authorized to edit cashbox " + id);
+        if (result.hasErrors()) throw new ValidationException("Error validating idealBox", errors);
+        boxService.updateBox(idealBoxToUpdate.setId(cashboxService.getIdealBox(id).getId()));
+        cashboxService.updateCurrentAndChangeBoxes(id);
+        return getCashbox(id, principal);
+    }
+
     private boolean unauthorized(String principalEmail, String cashboxId) throws NotFoundException {
         return !userUtil.isAdmin(principalEmail) && !cashboxService.userOwnsCashbox(cashboxId, principalEmail);
     }
-
 }

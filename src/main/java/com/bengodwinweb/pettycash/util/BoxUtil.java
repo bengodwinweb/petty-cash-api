@@ -5,7 +5,7 @@ import com.bengodwinweb.pettycash.model.Box;
 
 public class BoxUtil {
 
-    public static int calculateBoxDtoTotal(BoxDto boxDto) {
+    public static int calculateBoxDtoTotal(BoxDto boxDto) throws NullPointerException {
         Box box = new Box()
                 .setTwenties(boxDto.getTwenties())
                 .setTens(boxDto.getTens())
